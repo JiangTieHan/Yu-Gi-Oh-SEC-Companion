@@ -1,22 +1,22 @@
 #ifndef CARDPOOL_H
 #define CARDPOOL_H
 
-#include <unordered_map>
+#include <map>
 #include <iostream>
 
 class CardPool {
 public:
     CardPool();
-    CardPool(const std::unordered_map<int, int>& initialCards);
-    ~CardPool();
+    CardPool(const std::map<int, int>& cardPool);
+    ~CardPool() = default;
     
-    void resetPool();
+    void resetPool() noexcept;
     bool updatePool(int level, int change);
     void displayPool() const;
 
 private:
-std::unordered_map<int, int> cards;    // Key: Level, Value: Count
-std::unordered_map<int, int> initialCards; // Key: Level, Value: Count
+std::map<int, int> cards;    // Key: Level, Value: Count
+std::map<int, int> startingPool; // Key: Level, Value: Count
 };
 
 #endif // CARDPOOL_H
