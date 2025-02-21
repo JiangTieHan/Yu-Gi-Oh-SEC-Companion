@@ -11,8 +11,10 @@ public:
     ~CardPool() = default;
     
     void resetPool() noexcept;
-    bool updatePool(int level, int change);
     void displayPool() const;
+    bool updatePool(int level, int change);
+    inline bool isPoolEmpty() const { return cards.empty(); }
+
 
 private:
 std::map<int, int> cards;    // Key: Level, Value: Count
