@@ -22,6 +22,9 @@ const std::string NO_CMD_ALIAS = "n";
 const std::string MODIFY_XYZ_CMD = "xyz";
 const std::string MODIFY_FUSION_CMD = "fusion";
 
+const std::string CALCULATION_TOTAL_CMD = "t";
+const std::string CALCULATION_MONSTER_CMD = "m";
+
 std::vector<std::string> parse(const std::string& input) {
     std::vector<std::string> tokens{"invalid"};
     std::istringstream iss(input);
@@ -45,6 +48,7 @@ std::vector<std::string> parse(const std::string& input) {
             RESET_CMD,
             MODIFY_XYZ_CMD,
             MODIFY_FUSION_CMD,
+            CALCULATION_TOTAL_CMD,
             YES_CMD,
             NO_CMD,
             QUIT_CMD,
@@ -98,6 +102,9 @@ SECCommandType getSECCommandType(const std::vector<std::string> &tokens)
     else if (MODIFY_FUSION_CMD == command) {
         return SECCommandType::MODIFICATION_FUSION;
     }
+    else if (CALCULATION_TOTAL_CMD == command) {
+        return SECCommandType::CALCULATION;
+    }
     else if (YES_CMD == command) {
         return SECCommandType::CONFIRMATION_YES;
     }
@@ -125,6 +132,19 @@ bool isValidCommand(const std::vector<std::string>& tokens) {
 
     if ((command == MODIFY_XYZ_CMD || command == MODIFY_FUSION_CMD) && tokens.size() == 3) {
         return isNumber(tokens[1]) && isNumber(tokens[2]);
+    }
+
+    if (command == CALCULATION_TOTAL_CMD) {
+        if (tokens.size() < 4 || tokens[2] != CALCULATION_MONSTER_CMD) {
+            return false;
+        }
+        if (!isNumber(tokens[1])) {
+            return false;
+        }
+        for (size_t i = 3; i < tokens.size(); ++i) {
+            if (!isNumber(tokens[i])) return false;
+        }
+        return true;
     }
 
     return false;
