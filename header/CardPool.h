@@ -12,12 +12,12 @@ public:
     void resetPool() noexcept;
     void displayPool() const;
     bool updatePool(int level, int change);
-    inline bool isPoolEmpty() const { return cards.empty(); }
+    inline bool isPoolEmpty() const { return _cards.empty(); }
 
 
 private:
-    std::map<int, int> cards;    // Key: Level, Value: Count
-    std::map<int, int> startingPool; // Key: Level, Value: Count
+    std::map<int, int> _cards;    // Key: Level, Value: Count
+    std::map<int, int> _startingPool; // Key: Level, Value: Count
 };
 
 #endif // CARDPOOL_H

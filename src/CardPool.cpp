@@ -1,16 +1,16 @@
 #include "CardPool.h"
 #include <iostream>
 
-CardPool::CardPool(): cards(), startingPool() {
+CardPool::CardPool(): _cards(), _startingPool() {
 }
 
-CardPool::CardPool(const std::map<int, int> &cardPool): cards(cardPool), startingPool(cardPool)
+CardPool::CardPool(const std::map<int, int> &cardPool): _cards(cardPool), _startingPool(cardPool)
 {
 }
 
 void CardPool::resetPool() noexcept
 {
-    cards = startingPool;
+    _cards = _startingPool;
 }
 
 bool CardPool::updatePool(int level, int change)
@@ -19,22 +19,22 @@ bool CardPool::updatePool(int level, int change)
         return true;
     }
 
-    auto it = cards.find(level);
-    if (it == cards.end()) {
+    auto it = _cards.find(level);
+    if (it == _cards.end()) {
         if (change > 0) {
-            cards[level] = change;
+            _cards[level] = change;
             return true;
         }
         return false;
     }
 
-    if (change < 0 && it->second < -change) { // Not enough cards to remove
+    if (change < 0 && it->second < -change) { // Not enough _cards to remove
         return false;
     }
 
     it->second += change;
     if (it->second == 0) {
-        cards.erase(it);
+        _cards.erase(it);
     }
 
     return true;
@@ -42,12 +42,12 @@ bool CardPool::updatePool(int level, int change)
 
 void CardPool::displayPool() const
 {
-    if (cards.empty()) {
+    if (_cards.empty()) {
         std::cout << "Card pool is empty.";
         return;
     }
     
-    for (const auto& entry : cards) {
+    for (const auto& entry : _cards) {
         std::cout << "(" << entry.first << " * " << entry.second << ") ";
     }
 
