@@ -2,11 +2,12 @@
 #define CARDPOOL_H
 
 #include <map>
+#include <string>
 
 class CardPool {
 public:
-    CardPool();
-    CardPool(const std::map<int, int>& cardPool);
+    CardPool(const std::string& name);
+    CardPool(const std::string& name, const std::map<int, int>& cardPool);
     ~CardPool() = default;
     
     void resetPool() noexcept;
@@ -18,6 +19,7 @@ public:
 private:
     std::map<int, int> _cards;    // Key: Level, Value: Count
     std::map<int, int> _startingPool; // Key: Level, Value: Count
+    std::string _poolName;
 };
 
 #endif // CARDPOOL_H

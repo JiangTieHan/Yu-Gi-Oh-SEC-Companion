@@ -1,10 +1,10 @@
 #include "CardPool.h"
 #include <iostream>
 
-CardPool::CardPool(): _cards(), _startingPool() {
+CardPool::CardPool(const std::string& name): _cards(), _startingPool(), _poolName(name) {
 }
 
-CardPool::CardPool(const std::map<int, int> &cardPool): _cards(cardPool), _startingPool(cardPool)
+CardPool::CardPool(const std::string& name, const std::map<int, int> &cardPool): _cards(cardPool), _startingPool(cardPool), _poolName(name)
 {
 }
 
@@ -43,10 +43,11 @@ bool CardPool::updatePool(int level, int change)
 void CardPool::displayPool() const
 {
     if (_cards.empty()) {
-        std::cout << "Card pool is empty.";
+        std::cout << _poolName << ": Card pool is empty.\n";
         return;
     }
     
+    std::cout << _poolName << ": ";
     for (const auto& entry : _cards) {
         std::cout << "(" << entry.first << " * " << entry.second << ") ";
     }

@@ -19,7 +19,7 @@ public:
     inline SECState getCurrentState() const { return _currentState; }
     inline bool isBusy() const { return _currentState == SECState::BUSY; }
 
-    void processCommand(const std::vector<std::string>& command);
+    bool processCommand(const std::vector<std::string>& command);
 
 private:
     void setCurrentState(SECState newState);
