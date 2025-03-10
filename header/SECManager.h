@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+using SECCommand = std::vector<std::string>;
+
 enum class SECState {
     IDLE,
     BUSY,
@@ -19,7 +21,7 @@ public:
     inline SECState getCurrentState() const { return _currentState; }
     inline bool isBusy() const { return _currentState == SECState::BUSY; }
 
-    bool processCommand(const std::vector<std::string>& command);
+    bool processCommand(const SECCommand& command);
 
 private:
     bool canActivateSEC(int totalCard) const;

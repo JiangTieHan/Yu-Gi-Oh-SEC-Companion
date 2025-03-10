@@ -15,7 +15,7 @@ _banishPool(banish)
 {
 }
 
-bool SECManager::processCommand(const std::vector<std::string> &command)
+bool SECManager::processCommand(const SECCommand &command)
 {
     bool canProcess = false;
     // command is validated by the parser.
