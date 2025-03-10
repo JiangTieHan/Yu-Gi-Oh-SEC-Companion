@@ -26,11 +26,13 @@ public:
 private:
     bool canActivateSEC(int totalCard) const;
     bool canApplySECEffect(const std::vector<int>& monsterLevels) const;
+    void setStateIdle();
 
     CardPool _xyzPool;
     CardPool _fusionPool;
     CardPool _banishPool;
     SECState _currentState;
+    std::vector<SECCommand> _pendingCommands;
 };
 
 #endif // SEC_MANAGER_H

@@ -11,7 +11,8 @@ SECManager::SECManager() :
 _currentState(SECState::IDLE),
 _xyzPool(xyz),
 _fusionPool(fusion),
-_banishPool(banish)
+_banishPool(banish),
+_pendingCommands()
 {
 }
 
@@ -25,7 +26,7 @@ bool SECManager::processCommand(const SECCommand &command)
 
     SECCommandType commandType = getSECCommandType(command);
     if (commandType == SECCommandType::RESET) {
-        _currentState = SECState::IDLE;
+        setStateIdle();
         _xyzPool.resetPool();
         _fusionPool.resetPool();
         _banishPool.resetPool();
@@ -42,7 +43,7 @@ bool SECManager::processCommand(const SECCommand &command)
                 int change = std::stoi(command[2]);
                 poolUpdated = _xyzPool.updatePool(level, change);
                 canProcess = true;
-                _currentState = SECState::IDLE;
+                setStateIdle();
             }
             else if (commandType == SECCommandType::MODIFICATION_FUSION) {
                 _currentState = SECState::BUSY;
@@ -50,7 +51,7 @@ bool SECManager::processCommand(const SECCommand &command)
                 int change = std::stoi(command[2]);
                 poolUpdated = _fusionPool.updatePool(level, change);
                 canProcess = true;
-                _currentState = SECState::IDLE;
+                setStateIdle();
             }
             else if (commandType == SECCommandType::MODIFICATION_BANISH) {
                 _currentState = SECState::BUSY;
@@ -58,7 +59,7 @@ bool SECManager::processCommand(const SECCommand &command)
                 int change = std::stoi(command[2]);
                 poolUpdated = _banishPool.updatePool(level, change);
                 canProcess = true;
-                _currentState = SECState::IDLE;
+                setStateIdle();
             }
             else if (commandType == SECCommandType::CALCULATION) {
                 _currentState = SECState::BUSY;
@@ -102,4 +103,10 @@ bool SECManager::canActivateSEC(int totalCard) const
 bool SECManager::canApplySECEffect(const std::vector<int> &monsterLevels) const
 {
     return false;
+}
+
+void SECManager::setStateIdle()
+{
+    _pendingCommands.clear();
+    _currentState = SECState::IDLE;
 }
