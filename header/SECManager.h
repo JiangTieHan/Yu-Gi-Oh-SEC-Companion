@@ -22,7 +22,8 @@ public:
     bool processCommand(const std::vector<std::string>& command);
 
 private:
-    void setCurrentState(SECState newState);
+    bool canActivateSEC(int totalCard) const;
+    bool canApplySECEffect(const std::vector<int>& monsterLevels) const;
 
     CardPool _xyzPool;
     CardPool _fusionPool;

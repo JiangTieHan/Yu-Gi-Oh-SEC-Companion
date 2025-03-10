@@ -31,7 +31,9 @@ int main() {
             continue;
         }
         else {
-            secManager.processCommand(tokens);
+            if (!secManager.processCommand(tokens)) {
+                std::cout << "invalid input\n";
+            }
         }
 
         // for (const auto& token : tokens) {

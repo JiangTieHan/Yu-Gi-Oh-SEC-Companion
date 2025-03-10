@@ -3,16 +3,6 @@
 #include <unordered_map>
 #include <set>
 
-// enum class SECCommandType {
-//     INVALID,
-//     RESET,
-//     MODIFICATION_XYZ,
-//     MODIFICATION_FUSION,
-//     CALCULATION,
-//     CONFIRMATION_YES,
-//     CONFIRMATION_NO,
-//     QUIT,
-// };
 const static std::string xyz = "XYZ";
 const static std::string fusion = "Fusion";
 const static std::string banish = "Banish";
@@ -27,10 +17,10 @@ _banishPool(banish)
 
 bool SECManager::processCommand(const std::vector<std::string> &command)
 {
-    bool result = false;
+    bool canProcess = false;
     // command is validated by the parser.
     if (command.empty()) {
-        return result;
+        return canProcess;
     }
 
     SECCommandType commandType = getSECCommandType(command);
@@ -47,28 +37,42 @@ bool SECManager::processCommand(const std::vector<std::string> &command)
     {
         case SECState::IDLE:
             if (commandType == SECCommandType::MODIFICATION_XYZ) {
+                _currentState = SECState::BUSY;
                 int level = std::stoi(command[1]);
                 int change = std::stoi(command[2]);
                 poolUpdated = _xyzPool.updatePool(level, change);
-                result = true;
+                canProcess = true;
+                _currentState = SECState::IDLE;
             }
             else if (commandType == SECCommandType::MODIFICATION_FUSION) {
+                _currentState = SECState::BUSY;
                 int level = std::stoi(command[1]);
                 int change = std::stoi(command[2]);
                 poolUpdated = _fusionPool.updatePool(level, change);
-                result = true;
+                canProcess = true;
+                _currentState = SECState::IDLE;
             }
             else if (commandType == SECCommandType::MODIFICATION_BANISH) {
+                _currentState = SECState::BUSY;
                 int level = std::stoi(command[1]);
                 int change = std::stoi(command[2]);
                 poolUpdated = _banishPool.updatePool(level, change);
-                result = true;
+                canProcess = true;
+                _currentState = SECState::IDLE;
             }
             else if (commandType == SECCommandType::CALCULATION) {
+                _currentState = SECState::BUSY;
+                int monsterSize = command.size() - 3;
+                int total = std::stoi(command[1]);
+                std::vector<int> monsterLevels;
+                for(int i=0;i<monsterSize;i++) {
+                    monsterLevels.push_back(std::stoi(command[command.size() - 1 - i]));
+                }
 
+                canProcess = true;
             }
             else {
-                result = false;
+                canProcess = false;
             }
             break;
 
@@ -82,15 +86,20 @@ bool SECManager::processCommand(const std::vector<std::string> &command)
             break;
     }
 
-    if (poolUpdated) {
+    if (canProcess && poolUpdated) {
         _xyzPool.displayPool();
         _fusionPool.displayPool();
         _banishPool.displayPool();
     }
-    return result;
+    return canProcess;
 }
 
-void SECManager::setCurrentState(SECState newState)
+bool SECManager::canActivateSEC(int totalCard) const
 {
-    _currentState = newState;
+    return false;
+}
+
+bool SECManager::canApplySECEffect(const std::vector<int> &monsterLevels) const
+{
+    return false;
 }
