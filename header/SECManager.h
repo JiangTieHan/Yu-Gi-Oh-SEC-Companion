@@ -4,8 +4,10 @@
 #include "CardPool.h"
 #include <vector>
 #include <string>
+#include <utility>
 
 using SECCommand = std::vector<std::string>;
+using SECBanishCandidate = std::pair<int, int>;
 
 enum class SECState {
     IDLE,
@@ -24,15 +26,17 @@ public:
     bool processCommand(const SECCommand& command);
 
 private:
-    bool canActivateSEC(int totalCard) const;
+    bool canActivateSEC(int totalCard);
     bool canApplySECEffect(const std::vector<int>& monsterLevels) const;
     void setStateIdle();
 
     CardPool _xyzPool;
     CardPool _fusionPool;
-    CardPool _banishPool;
+    CardPool _banishedXyzPool;
+    CardPool _banishedFusionPool;
     SECState _currentState;
     std::vector<SECCommand> _pendingCommands;
+    std::set<SECBanishCandidate> _banishCandidates;
 };
 
 #endif // SEC_MANAGER_H

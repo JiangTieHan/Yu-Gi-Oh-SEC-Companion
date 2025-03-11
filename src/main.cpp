@@ -25,6 +25,10 @@ int main() {
             break;
         }
 
+        for (const auto& token : tokens) {
+            std::cout << "[" << token << "]\n";
+        }
+
         if (!isValidCommand(tokens)) {
             std::cout << "invalid input\n";
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -35,10 +39,6 @@ int main() {
                 std::cout << "invalid input\n";
             }
         }
-
-        // for (const auto& token : tokens) {
-        //     std::cout << "[" << token << "]\n";
-        // }
     }
 
     return 0;

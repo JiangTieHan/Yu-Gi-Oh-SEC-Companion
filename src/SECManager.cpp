@@ -5,14 +5,17 @@
 
 const static std::string xyz = "XYZ";
 const static std::string fusion = "Fusion";
-const static std::string banish = "Banish";
+const static std::string banishedXyz = "BanishedXyz";
+const static std::string banishedFusion = "BanishedFusion";
 
 SECManager::SECManager() :
 _currentState(SECState::IDLE),
 _xyzPool(xyz),
 _fusionPool(fusion),
-_banishPool(banish),
-_pendingCommands()
+_banishedXyzPool(banishedXyz),
+_banishedFusionPool(banishedFusion),
+_pendingCommands(),
+_banishCandidates()
 {
 }
 
@@ -29,7 +32,8 @@ bool SECManager::processCommand(const SECCommand &command)
         setStateIdle();
         _xyzPool.resetPool();
         _fusionPool.resetPool();
-        _banishPool.resetPool();
+        _banishedXyzPool.resetPool();
+        _banishedFusionPool.resetPool();
         return true;
     }
 
@@ -53,11 +57,19 @@ bool SECManager::processCommand(const SECCommand &command)
                 canProcess = true;
                 setStateIdle();
             }
-            else if (commandType == SECCommandType::MODIFICATION_BANISH) {
+            else if (commandType == SECCommandType::MODIFICATION_BANISHED_XYZ) {
                 _currentState = SECState::BUSY;
                 int level = std::stoi(command[1]);
                 int change = std::stoi(command[2]);
-                poolUpdated = _banishPool.updatePool(level, change);
+                poolUpdated = _banishedXyzPool.updatePool(level, change);
+                canProcess = true;
+                setStateIdle();
+            }
+            else if (commandType == SECCommandType::MODIFICATION_BANISHED_FUSION) {
+                _currentState = SECState::BUSY;
+                int level = std::stoi(command[1]);
+                int change = std::stoi(command[2]);
+                poolUpdated = _banishedFusionPool.updatePool(level, change);
                 canProcess = true;
                 setStateIdle();
             }
@@ -90,14 +102,27 @@ bool SECManager::processCommand(const SECCommand &command)
     if (canProcess && poolUpdated) {
         _xyzPool.displayPool();
         _fusionPool.displayPool();
-        _banishPool.displayPool();
+        _banishedXyzPool.displayPool();
     }
     return canProcess;
 }
 
-bool SECManager::canActivateSEC(int totalCard) const
+// Return ture when player can activate SEC (totalCard = 2(xyzLevel) + fusionLevel)
+bool SECManager::canActivateSEC(int totalCard)
 {
-    return false;
+    bool canActivate = false;
+    if (totalCard <=0 || _xyzPool.isPoolEmpty() || _fusionPool.isPoolEmpty()) {
+        return false;
+    }
+    for (int xyzLevel : _xyzPool.getLevelsWithMultipleCopies()) {
+        int targetFusionLevel = totalCard - 2 * xyzLevel;
+        auto it = _fusionPool.getAllLevels().find(targetFusionLevel);
+        if (it != _fusionPool.getAllLevels().end()) {
+            _banishCandidates.insert(std::make_pair(2 * xyzLevel, targetFusionLevel));
+            canActivate = true;
+        }
+    }
+    return canActivate;
 }
 
 bool SECManager::canApplySECEffect(const std::vector<int> &monsterLevels) const
@@ -108,5 +133,6 @@ bool SECManager::canApplySECEffect(const std::vector<int> &monsterLevels) const
 void SECManager::setStateIdle()
 {
     _pendingCommands.clear();
+    _banishCandidates.clear();
     _currentState = SECState::IDLE;
 }
