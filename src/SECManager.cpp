@@ -15,7 +15,9 @@ _fusionPool(fusion),
 _banishedXyzPool(banishedXyz),
 _banishedFusionPool(banishedFusion),
 _pendingCommands(),
-_banishCandidates()
+_banishCandidates(),
+_returnCandidate(),
+_banishCandidate()
 {
 }
 
@@ -30,14 +32,12 @@ bool SECManager::processCommand(const SECCommand &command)
     SECCommandType commandType = getSECCommandType(command);
     if (commandType == SECCommandType::RESET) {
         setStateIdle();
-        _xyzPool.resetPool();
-        _fusionPool.resetPool();
-        _banishedXyzPool.resetPool();
-        _banishedFusionPool.resetPool();
+        resetCardPools();
         return true;
     }
 
     bool poolUpdated = false;
+    bool hsaReturnCandidate = false;
     switch (_currentState)
     {
         case SECState::IDLE:
@@ -82,6 +82,16 @@ bool SECManager::processCommand(const SECCommand &command)
                     monsterLevels.push_back(std::stoi(command[command.size() - 1 - i]));
                 }
 
+                if (canActivateSEC(total)) {
+                    hsaReturnCandidate = canApplySECEffect(monsterLevels);
+                }
+
+                if (hsaReturnCandidate) {
+                    _currentState = SECState::WAITING_CONFIRMATION;
+                }
+                else {
+                    setStateIdle();
+                }
                 canProcess = true;
             }
             else {
@@ -99,15 +109,17 @@ bool SECManager::processCommand(const SECCommand &command)
             break;
     }
 
-    if (canProcess && poolUpdated) {
-        _xyzPool.displayPool();
-        _fusionPool.displayPool();
-        _banishedXyzPool.displayPool();
+    if (poolUpdated) {
+        displayCardPools();
     }
+
+    // if (hsaReturnCandidate) {
+    //     std::cout << "" << std::endl;
+    // }
     return canProcess;
 }
 
-// Return ture when player can activate SEC (totalCard = 2(xyzLevel) + fusionLevel)
+// Return true when player can activate SEC (totalCard = 2(xyzLevel) + fusionLevel)
 bool SECManager::canActivateSEC(int totalCard)
 {
     bool canActivate = false;
@@ -118,21 +130,65 @@ bool SECManager::canActivateSEC(int totalCard)
         int targetFusionLevel = totalCard - 2 * xyzLevel;
         auto it = _fusionPool.getAllLevels().find(targetFusionLevel);
         if (it != _fusionPool.getAllLevels().end()) {
-            _banishCandidates.insert(std::make_pair(2 * xyzLevel, targetFusionLevel));
+            BanishCandidate banishCandidate(xyzLevel, targetFusionLevel);
+            _banishCandidates.push_back(banishCandidate);
             canActivate = true;
         }
     }
     return canActivate;
 }
 
-bool SECManager::canApplySECEffect(const std::vector<int> &monsterLevels) const
+bool SECManager::canApplySECEffect(const std::vector<int> &monsterLevels)
 {
-    return false;
+    bool canApply = false;
+    if (monsterLevels.empty() || 
+       (_banishCandidates.empty() || (_banishedXyzPool.isPoolEmpty() && _banishedFusionPool.isPoolEmpty()))) {
+        return false;    
+    }
+
+    CardPool tempXyzPool = _banishedXyzPool;
+    CardPool tempFusionPool = _banishedFusionPool;
+    for(const auto& banishCandidate : _banishCandidates ) {
+        tempXyzPool.updatePool(banishCandidate.xyzLevel, 2);
+        tempFusionPool.updatePool(banishCandidate.fusionLevel, 1);
+    }
+    _banishCandidates.clear();
+
+    for(int monsterLevel : monsterLevels) {
+        for (int xyzLevel : tempXyzPool.getAllLevels()) {
+            int targetFusionLevel = monsterLevel - xyzLevel;
+            auto it = tempFusionPool.getAllLevels().find(targetFusionLevel);
+            if (it != tempFusionPool.getAllLevels().end()) {
+                _returnCandidate.xyzLevel = xyzLevel;
+                _returnCandidate.fusionLevel = targetFusionLevel;
+                canApply = true;
+            }
+        }
+    }
+
+    return canApply;
 }
 
 void SECManager::setStateIdle()
 {
     _pendingCommands.clear();
     _banishCandidates.clear();
+    _returnCandidate.xyzLevel = 0; _returnCandidate.fusionLevel = 0;
     _currentState = SECState::IDLE;
+}
+
+void SECManager::resetCardPools()
+{
+    _xyzPool.resetPool();
+    _fusionPool.resetPool();
+    _banishedXyzPool.resetPool();
+    _banishedFusionPool.resetPool();
+}
+
+void SECManager::displayCardPools() const
+{
+    _xyzPool.displayPool();
+    _fusionPool.displayPool();
+    _banishedXyzPool.displayPool();
+    _banishedFusionPool.displayPool();
 }

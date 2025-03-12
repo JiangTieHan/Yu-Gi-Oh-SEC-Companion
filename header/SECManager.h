@@ -7,12 +7,22 @@
 #include <utility>
 
 using SECCommand = std::vector<std::string>;
-using SECBanishCandidate = std::pair<int, int>;
 
 enum class SECState {
     IDLE,
     BUSY,
     WAITING_CONFIRMATION,
+};
+
+struct BanishCandidate {
+    int xyzLevel;
+    int fusionLevel;
+
+    BanishCandidate() :
+    xyzLevel(0), fusionLevel(0) {}
+
+    BanishCandidate(int xyzLevel, int fusionLevel) :
+    xyzLevel(xyzLevel), fusionLevel(fusionLevel) {}
 };
 
 class SECManager {
@@ -27,8 +37,10 @@ public:
 
 private:
     bool canActivateSEC(int totalCard);
-    bool canApplySECEffect(const std::vector<int>& monsterLevels) const;
+    bool canApplySECEffect(const std::vector<int>& monsterLevels);
     void setStateIdle();
+    void resetCardPools();
+    void displayCardPools() const;
 
     CardPool _xyzPool;
     CardPool _fusionPool;
@@ -36,7 +48,9 @@ private:
     CardPool _banishedFusionPool;
     SECState _currentState;
     std::vector<SECCommand> _pendingCommands;
-    std::set<SECBanishCandidate> _banishCandidates;
+    std::vector<BanishCandidate> _banishCandidates;
+    BanishCandidate _banishCandidate;
+    BanishCandidate _returnCandidate;
 };
 
 #endif // SEC_MANAGER_H
